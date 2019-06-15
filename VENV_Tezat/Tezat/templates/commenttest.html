@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <form action="http://127.0.0.1:8000/api/discussion/add-reply/1/" method="POST">
+        {% csrf_token %}
+        <input type="text" name="content">
+    <input type="submit" value="Tartışmaya Yanıt Ekle">
+</form>
+{% endblock body %}

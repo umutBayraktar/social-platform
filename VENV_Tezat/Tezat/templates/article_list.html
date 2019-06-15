@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+
+
+{% block body %}
+
+    <style>
+        .options-menu {
+            position: relative;
+        }
+
+        .options-btn {
+            position: absolute;
+            right: 0;
+            top: 5px;
+            font-size: 25px;
+            -webkit-border-radius: 40px;
+            -moz-border-radius: 40px;
+            border-radius: 40px;
+        }
+    </style>
+
+
+<div class="options-menu">
+    <ul style="margin-top: 20px; margin-bottom: 20px" class="nav nav-pills justify-content-center" id="myTab" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="popular-articles" data-toggle="tab" href="#popular-articles-content" role="tab" aria-controls="home" aria-selected="true">Popüler Yazılar</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="recent-articles" data-toggle="tab" href="#recent-articles-content" role="tab" aria-controls="profile" aria-selected="false">Yeni Yazılar</a>
+      </li>
+    </ul>
+
+    <a class="options-btn" href="{% url 'article:article_create' %}">
+        <i class="fa fa-plus"></i>
+    </a>
+</div>
+
+<div class="tab-content" id="myTabContent">
+  <div class="tab-pane fade show active" id="popular-articles-content" role="tabpanel" aria-labelledby="popular-articles">
+  </div>
+  <div class="tab-pane fade" id="recent-articles-content" role="tabpanel" aria-labelledby="recent-articles">
+  </div>
+</div>
+
+<script>
+
+        function getArticles(type, el) {
+            $.get(API_URL + "articles/" + type + "/", function (data) {
+
+                var $el = $(el);
+
+                var articles = data.results;
+
+                var template = "";
+
+                articles.forEach(function (article) {
+                    template += `
+                         <div class="col-sm-4">
+                            <div class="card">
+                                <img id="article_image" src="${article.image}" alt="" class="card-img-top">
+                                <div class="card-header">
+                                    <h1 id="article_title" class="card-title">${article.title}</h1>
+                                    <a href="{% url 'user:user_page'%}?user=${article.author}">${article.author}</a>
+                                    <h4 id="article_created_date" class="card-subtitle mb-2 text-muted">${article.created_date}</h4>
+                                    <h3 id="article_pageview" class="card-subtitle mb-2 text-muted">Görüntülenme Sayısı: ${article.pageview}</h3>
+                                    <a id="article_detail" href="/articles/article/${article.id}/" class="btn btn-dark">Görüntüle</a>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+
+                template += "</div>";
+                template = '<div class="row">' + template;
+
+                $el.html(template);
+
+            })
+        }
+
+        getArticles("new", "#recent-articles-content");
+        getArticles("popular", "#popular-articles-content");
+
+
+</script>
+
+{% endblock body %}
+
+
+

@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block head %}
+    <script src="https://www.google.com/recaptcha/api.js" async="" defer=""></script>
+{% endblock head %}
+{% block body %}
+    	{% if messages %}
+            {% for message in messages %}
+                <div {% if message.tags %} class="alert-alert-{{message.tags}}"{% endif%}>{{message}}</div>
+            {% endfor %}
+		{% endif %}
+      <div class="container mt-5">
+        <div class="row">
+          <div class="col-12 col-sm-10 offset-sm-1 col-md-8 offset-md-2 col-lg-8 offset-lg-2 col-xl-8 offset-xl-2">
+            <div class="login-brand">
+              Kayıt Ol
+            </div>
+
+            <div class="card card-primary">
+
+              <div class="card-body">
+                <form method="POST" id="RegisterForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                  <div class="row">
+                    <div class="form-group col-6">
+                       <label for="id_first_name"><h4>İsim:</h4></label> <input type="text" name="first_name" class="form-control" maxlength="50" required id="id_first_name" />
+                    </div>
+                    <div class="form-group col-6">
+                      <label for="id_last_name"><h4>Soyisim:</h4></label> <input type="text" name="last_name" class="form-control" maxlength="50" required id="id_last_name" />
+                    </div>
+                  </div>
+
+
+                  <div class="row">
+                    <div class="form-group col-6">
+                       <label for="id_username"><h4>Kullanıcı Adı:</h4></label> <input type="text" name="username" class="form-control" required id="id_username" />
+                    </div>
+                    <div class="form-group col-6">
+                    	<label for="id_email"><h4>Email:</h4></label> <input type="email" name="email" class="form-control" required id="id_email" />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+
+                  </div>
+
+                  <div class="row">
+                    <div class="form-group col-6">
+                       <label for="id_password"><h4>Şifre:</h4></label> <input type="password" name="password" class="form-control" id="id_password" />
+                    </div>
+                    <div class="form-group col-6">
+                      <label for="id_confirm"><h4>Şifre Tekrar:</h4></label> <input type="password" name="confirm" class="form-control" id="id_confirm" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="id_photo"><h4>Profil Fotoğrafı:</h4></label> <input type="file" name="photo" class="form-control" id="id_photo" />
+                  </div>
+                  <div class="form-group">
+                   <label for="id_about"><h4>Hakkımda:</h4></label> <textarea name="about" cols="40" rows="10" class="form-control" id="id_about"></textarea>
+                  </div>
+
+
+
+
+
+                  <div class="form-group">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" name="agree" class="custom-control-input" id="agree">
+                      <label class="custom-control-label" for="agree">Kullanıcı sözleşmesini okudum ve onaylıyorum</label>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-block">
+                      Kayıt Ol
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <div class="simple-footer">
+              Copyright &copy; Tezat.net 2018
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+{% endblock body %}
+
+
+{% block menu %}
+
+{% endblock menu %}

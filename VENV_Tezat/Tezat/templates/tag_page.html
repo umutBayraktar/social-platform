@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <style>
+        .profile-menu {
+            position: relative;
+        }
+
+        .follow-btn {
+            position: absolute;
+            right: 0;
+            top: 0;
+            -webkit-border-radius: 40px;
+            -moz-border-radius: 40px;
+            border-radius: 40px;
+        }
+    </style>
+{% endblock head %}
+
+{% block body %}
+
+<div class="profile-menu">
+<ul style="margin-top: 20px; margin-bottom: 20px" class="nav nav-pills justify-content-center" id="myTab" role="tablist">
+    <li>
+        <h1 class="nav-item">{{ tag }}</h1>
+    </li>
+</ul>
+
+<ul style="margin-top: 20px; margin-bottom: 20px" class="nav nav-pills justify-content-center" id="myTab" role="tablist">
+
+    <li class="nav-item">
+    <a class="nav-link active" id="tag-articles" data-toggle="tab" href="#tag-articles-content" role="tab" aria-controls="home" aria-selected="true">Yazılar</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="tag-discussions" data-toggle="tab" href="#tag-discussions-content" role="tab" aria-controls="profile" aria-selected="false">Tartışmalar</a>
+  </li>
+</ul>
+    <button class="btn btn-primary follow-btn">
+        {% if is_follow %}
+            Takipten Çık
+        {% else %}
+            Takip Et
+        {% endif %}
+
+    </button>
+</div>
+<div class="tab-content" id="myTabContent">
+  <div class="tab-pane fade show active" id="tag-articles-content" role="tabpanel" aria-labelledby="tag-articles">
+  </div>
+  <div class="tab-pane fade" id="tag-discussions-content" role="tabpanel" aria-labelledby="tag-discussions">
+  </div>
+</div>
+
+<script>
+
+        function getTagArticles(tagname, el) {
+            $.get(API_URL + "tag/articles/?tag="+tagname, function (data) {
+
+                var $el = $(el);
+
+                var articles = data.results;
+
+                var template = "";
+
+                articles.forEach(function (article) {
+                    template += `
+                         <div class="col-sm-4">
+                            <div class="card">
+                                <img id="article_image" src="${article.image}" alt="" class="card-img-top">
+                                <div class="card-header">
+                                    <h1 id="article_title" class="card-title">${article.title}</h1>
+                                    <a href="{% url 'user:user_page'%}?user=${article.author}">${article.author}</a>
+                                    <h4 id="article_created_date" class="card-subtitle mb-2 text-muted">${article.created_date}</h4>
+                                    <h3 id="article_pageview" class="card-subtitle mb-2 text-muted">Görüntülenme Sayısı: ${article.pageview}</h3>
+                                    <a id="article_detail" href="/articles/article/${article.id}/" class="btn btn-dark">Görüntüle</a>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+
+                template += "</div>";
+                template = '<div class="row">' + template;
+
+                $el.html(template);
+
+            })
+        }
+        function getTagDiscussions(tagname, el) {
+            $.get(API_URL + "tag/discussions/?tag="+tagname, function (data) {
+
+                var $el = $(el);
+
+                var discussions = data.results;
+
+                var template = "";
+
+
+                discussions.forEach(function (discussion) {
+                    template += `
+                         <div class="col-sm-4">
+                            <div class="card">`
+                            if(discussion.image != null){
+                                template += `<img id="discussion_image" src="${discussion.image}" alt="" class="card-img-top">`
+                            }
+                            else if(discussion.video_url != null){
+                                template += `<a href="${data.video_url}" target="_blank">
+<img src="https://cdn.webtekno.com/media/cache/content_detail_v2/article/48713/youtube-un-diger-uygulamalari-kullanirken-acik-kalan-resim-icinde-resim-modu-ucretsiz-oluyor-1530178593.jpg" alt="" width="560" height="320">
+</a>`
+                            }
+                            template += `<div class="card-header">
+                                    <h1 id="discussion_text" class="card-title">${discussion.text}</h1>
+                                    <a href="{% url 'user:user_page'%}?user=${discussion.username}">${discussion.username}</a>
+                                    <h4 id="discussion_created_date" class="card-subtitle mb-2 text-muted">${discussion.created_date}</h4>
+                                    <h3 id="discussion_pageview" class="card-subtitle mb-2 text-muted">Görüntülenme Sayısı: ${discussion.pageview}</h3>
+                                    <a id="discussion_detail" href="/discussions/discussion/${discussion.id}/" class="btn btn-dark">Görüntüle</a>
+                                </div>
+                            </div>
+                        </div>\`;`;
+
+
+                });
+
+                template += "</div>";
+                template = '<div class="row">' + template;
+
+                $el.html(template);
+
+            })
+        }
+        getTagArticles("{{ tag }}","#tag-articles-content");
+        getTagDiscussions("{{ tag }}","#tag-discussions-content");
+
+        $(".follow-btn").click(function () {
+
+            var $this = $(this);
+
+            $.get(API_URL + "tag/follow/{{ tag }}/", function (data) {
+
+                $this.text(data.message);
+            })
+
+        })
+
+</script>
+
+{% endblock body %}
+
+
+

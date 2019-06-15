@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+
+
+{% block body %}
+    <form action="" method="POST" id="newArticleForm" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group">
+        {{form.media}}
+        <label for="id_name"><h4>Etiket Adı:</h4></label> <input type="text" name="name" class="form-control" maxlength="200" required id="id_name" />
+
+    </div>
+
+
+    <input type="submit" value="Etiket Oluştur" class="btn btn-primary">
+</form>
+
+
+{% endblock body %}

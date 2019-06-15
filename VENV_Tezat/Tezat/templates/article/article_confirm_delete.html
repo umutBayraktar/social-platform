@@ -1,0 +1,12 @@
+{%  extends 'base.html' %}
+
+{% block body %}
+
+    <form  method="POST" class="form-group">
+        {% csrf_token %}
+        <p>{{ object }} içeriğini silmek istediğinizden emin misiniz?</p>
+        <input type="submit" value="Sil" class="btn btn-danger">
+        <a href="{% url 'article:article_update' object.pk %}" class="btn btn-dark"> Vazgeç </a>
+    </form>
+
+{% endblock body %}

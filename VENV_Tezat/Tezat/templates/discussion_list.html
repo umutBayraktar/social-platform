@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+
+
+{% block body %}
+
+    <style>
+        .options-menu {
+            position: relative;
+        }
+
+        .options-btn {
+            position: absolute;
+            right: 0;
+            top: 5px;
+            font-size: 25px;
+            -webkit-border-radius: 40px;
+            -moz-border-radius: 40px;
+            border-radius: 40px;
+        }
+    </style>
+
+<div class="options-menu">
+<ul style="margin-top: 20px; margin-bottom: 20px" class="nav nav-pills justify-content-center" id="myTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="popular-discussions" data-toggle="tab" href="#popular-discussions-content" role="tab" aria-controls="home" aria-selected="true">Popüler Tartışmalar</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="recent-discussions" data-toggle="tab" href="#recent-discussions-content" role="tab" aria-controls="profile" aria-selected="false">Yeni Tartışmalar</a>
+  </li>
+</ul>
+
+<a class="options-btn" href="{% url 'discussion:add_discussion' %}">
+        <i class="fa fa-plus"></i>
+    </a>
+</div>
+
+<div class="tab-content" id="myTabContent">
+  <div class="tab-pane fade show active" id="popular-discussions-content" role="tabpanel" aria-labelledby="popular-discussions">
+  </div>
+  <div class="tab-pane fade" id="recent-discussions-content" role="tabpanel" aria-labelledby="recent-discussions">
+  </div>
+</div>
+
+<script>
+
+        function getDiscussions(type, el) {
+            $.get(API_URL + "discussions/" + type + "/", function (data) {
+
+                var $el = $(el);
+
+                var discussions = data.results;
+
+                var template = "";
+                console.log(discussions);
+
+                discussions.forEach(function (discussion) {
+                    template += `
+                         <div class="col-sm-4">
+                            <div class="card">`
+                            if(discussion.image != null){
+                                template += `<img id="discussion_image" src="${discussion.image}" alt="" class="card-img-top">`
+                            }
+                            else if(discussion.video_url != null){
+                                template += `<a href="${data.video_url}" target="_blank">
+<img src="https://cdn.webtekno.com/media/cache/content_detail_v2/article/48713/youtube-un-diger-uygulamalari-kullanirken-acik-kalan-resim-icinde-resim-modu-ucretsiz-oluyor-1530178593.jpg" alt="" width="560" height="320">
+</a>`
+                            }
+                            template += `<div class="card-header">
+                                    <h1 id="discussion_text" class="card-title">${discussion.text}</h1>
+                                    <a href="{% url 'user:user_page'%}?user=${discussion.author}">${discussion.author}</a>
+                                    <h4 id="discussion_created_date" class="card-subtitle mb-2 text-muted">${discussion.created_date}</h4>
+                                    <h3 id="discussion_pageview" class="card-subtitle mb-2 text-muted">Görüntülenme Sayısı: ${discussion.pageview}</h3>
+                                    <a id="discussion_detail" href="/discussions/discussion/${discussion.id}/" class="btn btn-dark">Görüntüle</a>
+                                </div>
+                            </div>
+                        </div>\`;`;
+
+
+                });
+
+                template += "</div>";
+                template = '<div class="row">' + template;
+
+                $el.html(template);
+
+            })
+        }
+
+        getDiscussions("new", "#recent-discussions-content");
+        getDiscussions("popular","#popular-discussions-content");
+
+
+</script>
+
+{% endblock body %}
+
+
+

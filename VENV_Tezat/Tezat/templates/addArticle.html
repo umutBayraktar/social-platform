@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+
+
+
+{% block body %}
+<form action="" method="POST" id="newArticleForm" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group">
+        {{form.media}}
+        <label for="id_title"><h4>Başlık:</h4></label> <input type="text" name="title" class="form-control" maxlength="200" required id="id_title" />
+        <label for="id_image"><h4>Resim:</h4></label> <input type="file" name="image" class="form-control" id="id_image" />
+        {{ form.content }}
+        <br>
+        {{ form.tags}}
+    </div>
+
+
+    <input type="submit" value="Yazı Oluştur" class="btn btn-primary">
+</form>
+
+{% endblock body %}
+
+

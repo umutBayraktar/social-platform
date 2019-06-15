@@ -1,0 +1,708 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <!--<meta name="keywords" content="{% for tag in object.tags %} {{ tag.name }} , {% endfor %}">  -->
+    {% load static %}
+{% endblock head %}
+
+
+{% block body %}
+    <article>
+        <div id="article" class="card" style="padding:15px">
+
+        </div>
+
+
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div id="bottom_content">
+                    <div id="article-footer"></div>
+                </div>
+            </div>
+        </div>
+
+
+        <div  id="token-form">{% csrf_token %}</div>
+    </article>
+
+    <script>
+        /* Get Article */
+        function getArticle(articleId) {
+            $.get(API_URL + "article/" + articleId, function (data) {
+
+                var $el = $("#article");
+
+                var template = `
+                    <img id="article_image" src="${data.image}" alt="" class="card-img-top">
+                    <div class="card-header">
+                        <h1 id="article_title" class="card-title">${data.title}</h1>
+                        <h4 id="article_created_date" class="card-subtitle mb-2 text-muted">${data.created_date}</h4>
+                        <h3 id="article_pageview" class="card-subtitle mb-2 text-muted">Görüntülenme Sayısı: ${data.pageview}</h3>
+                        <a id="article_author" href="{% url 'user:user_page'%}?user=${data.author.username}" class="card-title">${data.author.username}</a>
+                    </div>
+                    <div class="card-body">
+                        <div id="article_content">
+                            ${data.content}
+                        </div>
+                    </div>
+                    <div class="navbar-light bg-light" style="padding: 5px;margin:5px 5px; text-align: center">
+                        <button type="button" id="btn_positive_related_links" class="btn btn-success col-md-1">
+                            <img style="width: 20px" src="{% static 'dist/img/icons/positive-article.png' %}">
+                        </button>
+                        <button type="button" id="btn_positive_comments" class="btn btn-success col-md-1">
+                            <img style="width: 20px" src="{% static 'dist/img/icons/positive-comment.png' %}">
+                        </button>
+                        <button type="button" id="btn_article_like" class="btn btn-success col-md-1">
+                            <i class="fa fa-thumbs-up" aria-hidden="true"></i>
+                            <span id="like_count"></span>
+                        </button>
+                        <button type="button" id="btn_article_dislike" class="btn btn-danger col-md-1">
+                            <i class="fa fa-thumbs-down" aria-hidden="true"></i>
+                            <span id="dislike_count"></span>
+                        </button>
+                        <button type="button" id="btn_negative_comments" class="btn btn-danger col-md-1">
+                            <img style="width: 20px" src="{% static 'dist/img/icons/negative-comment.png' %}">
+                        </button>
+                        <button type="button" id="btn_negative_related_links" class="btn btn-danger col-md-1">
+                            <img style="width: 20px" src="{% static 'dist/img/icons/negative-article.png' %}">
+                        </button>
+                    </div>
+                `;
+                  var tags=`<div class="navbar-light bg-light" style="padding: 5px;margin:5px 5px; text-align: center">`;
+                 data.tags.forEach(function(data){
+                     tags+= `<a href="${SITE_URL}tags/page/?tag=${data.name}" class="btn btn-dark col-md-2" target="_blank">#${data.name}</a>&nbsp;&nbsp;`
+                 });
+                 tags +=`</div>`;
+                 template += tags;
+                $el.html(template);
+
+            })
+        }
+        getArticle({{ id }});
+        /* Get Article */
+
+        /* Like Article */
+        function articleLike(articleId) {
+            $.get(API_URL + "article/like/" + articleId, function (data) {
+                $("#like_count").text(data.like);
+                $("#dislike_count").text(data.dislike);
+            })
+        }
+
+        $("html").on("click", "#btn_article_like", function () {
+            articleLike({{id}});
+        })
+        /* Like Article */
+
+        /* Dislike Article */
+        function articleDisLike(articleId) {
+            $.get(API_URL + "article/dislike/" + articleId, function (data) {
+                $("#like_count").text(data.like);
+                $("#dislike_count").text(data.dislike);
+            })
+        }
+
+        $("html").on("click", "#btn_article_dislike", function () {
+            articleDisLike({{id}});
+        })
+        /* Dislike Article */
+
+        /* Get Positive Comments */
+        function getPositiveComments(articleId) {
+            $.get(API_URL + "article/positive-comments/?article=" + articleId, function (data) {
+
+                var comments = data.results;
+                var template = ``;
+                var comment_form = `<div class="add-comment-form">
+                    <div class="row">
+                        <div class="col-md-10">
+                            <input type="text" class="form-control comment-input">
+                        </div>
+                        <div class="col-sm-2">
+                            <button class="btn btn-primary btn_add_comment" id="positive">Yorum Ekle</button>
+                        </div>
+                    </div>
+                </div>`;
+
+                comments.forEach(function (item) {
+                    template += `
+                        <div class="card" data-comment-id="${item.id}">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <img src="${item.image}" class="img img-rounded img-fluid"/>
+                                        <p class="text-secondary text-center"> ${item.created_date}</p>
+                                    </div>
+                                    <div class="col-md-10">
+                                        <p>
+                                            <a class="float-left" href="{% url 'user:user_page'%}?user=${item.username}"><strong> ${item.username} </strong></a>
+                                         </p>
+                                       <div class="clearfix"></div>
+                                        <p> ${item.content}</p>
+                                        <p class="clearfix">
+                                            <button class="float-right btn btn-outline-primary ml-2 btn_replies"><i class="fa fa-reply"></i> Replies</button>
+                                            <button class="float-right btn text-white btn-danger ml-2 btn_dislike_comment"> <i class="fa fa-thumbs-down"></i> <span class="comment_dislike_count"></span></button>
+                                            <button class="float-right btn text-white btn-success ml-2 btn_like_comment"> <i class="fa fa-thumbs-up"></i> <span class="comment_like_count"></span></button>
+                                      </p>
+                                      <div class="reply-container"></div>
+                                   </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                })
+
+
+                $("#article-footer").html(template);
+                $("#article-footer").append(comment_form);
+
+            })
+        }
+
+        $("html").on("click", "#btn_positive_comments", function () {
+            var $this = $(this);
+
+            $this.parent().find(".btn").removeClass("active");
+
+            $this.addClass("active");
+
+            getPositiveComments({{id}});
+        })
+        /* Get Positive Comments */
+
+        /* Get Negative Comments */
+        function getNegativeComments(articleId) {
+            $.get(API_URL + "article/negative-comments/?article=" + articleId, function (data) {
+
+                var comments = data.results;
+                var template = ``;
+                var comment_form = `<div class="add-comment-form">
+                    <div class="row">
+                        <div class="col-md-10">
+                            <input type="text" class="form-control comment-input">
+                        </div>
+                        <div class="col-sm-2">
+                            <button class="btn btn-primary btn_add_comment" id="negative">Yorum Ekle</button>
+                        </div>
+                    </div>
+                </div>`;
+
+                comments.forEach(function (item) {
+                    template += `
+                        <div class="card" data-comment-id="${item.id}">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <img src="${item.image}" class="img img-rounded img-fluid"/>
+                                        <p class="text-secondary text-center"> ${item.created_date}</p>
+                                    </div>
+                                    <div class="col-md-10">
+                                        <p>
+                                            <a class="float-left" href="{% url 'user:user_page'%}?user=${item.username}"><strong> ${item.username} </strong></a>
+                                        </p>
+                                       <div class="clearfix"></div>
+                                        <p> ${item.content}</p>
+                                        <p class="clearfix">
+                                            <button class="float-right btn btn-outline-primary ml-2 btn_replies"><i class="fa fa-reply"></i> Replies</button>
+                                            <button class="float-right btn text-white btn-danger ml-2 btn_dislike_comment"> <i class="fa fa-thumbs-down"></i> <span class="comment_dislike_count"></span></button>
+                                            <button class="float-right btn text-white btn-success ml-2 btn_like_comment"> <i class="fa fa-thumbs-up"></i> <span class="comment_like_count"></span></button>
+                                      </p>
+                                      <div class="reply-container"></div>
+                                   </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+
+                $("#article-footer").html(template);
+                $("#article-footer").append(comment_form);
+            })
+        }
+
+        $("html").on("click", "#btn_negative_comments", function () {
+            var $this = $(this);
+
+            $this.parent().find(".btn").removeClass("active");
+
+            $this.addClass("active");
+
+            getNegativeComments({{id}});
+        })
+        /* Get Negative Comments */
+
+        /* Comment Like */
+        function commentLike(commentId, callback) {
+            $.get(API_URL + "article/comment/like/" + commentId, function (data) {
+                console.log(data);
+                callback(data);
+            })
+        }
+
+        $("html").on("click", ".btn_like_comment", function (e) {
+            e.preventDefault();
+
+            var $this = $(this);
+
+            var commentId = $(this).closest(".card").data("comment-id");
+
+            commentLike(commentId, function (data) {
+
+                $this.find(".comment_like_count").html(data.like);
+                $this.prev().find(".comment_dislike_count").html(data.dislike);
+
+            });
+        })
+        /* Comment Like */
+
+        /* Comment DisLike */
+        function commentDisLike(commentId, callback) {
+            $.get(API_URL + "article/comment/dislike/" + commentId, function (data) {
+                callback(data);
+            })
+        }
+
+        $("html").on("click", ".btn_dislike_comment", function (e) {
+            e.preventDefault();
+
+            var $this = $(this);
+
+            var commentId = $(this).closest(".card").data("comment-id");
+
+            commentDisLike(commentId, function (data) {
+
+                $this.find(".comment_dislike_count").html(data.dislike);
+                $this.next().find(".comment_like_count").html(data.like);
+
+            });
+        })
+        /* Comment DisLike */
+
+        /* Get Replies */
+        function getReplies(commentId, callback) {
+            $.get(API_URL + "article/replies/?comment=" + commentId, function (data) {
+
+                callback(data);
+
+            })
+        }
+
+        $("html").on("click", ".btn_replies", function (e) {
+            e.preventDefault();
+
+            var $this = $(this);
+
+            var count = 0;
+
+            var commentId = $(this).closest(".card").data("comment-id");
+
+            getReplies(commentId, function (data) {
+
+                var template = ``;
+                var replies = data.results;
+
+                $("input, textarea").removeAttr("autofocus");
+                $("input, textarea").blur();
+
+                replies.forEach(function (reply, i) {
+                    template += `
+                        <div class="card card-reply" data-reply-id="${reply.id}">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <img src="${reply.image}" class="img img-rounded img-fluid"/>
+                                        <p class="text-secondary text-center"> ${reply.created_date}</p>
+                                    </div>
+                                    <div class="col-md-10">
+                                        <p>
+                                            <a class="float-left" href="{% url 'user:user_page'%}?user=${reply.username}"><strong> ${reply.username} </strong></a>
+                                        </p>
+                                       <div class="clearfix"></div>
+                                        <p> ${reply.content}</p>
+                                        <p class="clearfix">
+                                            <button class="float-right btn btn-outline-primary ml-2 btn_replies"><i class="fa fa-reply"></i> Reply</button>
+                                            <button class="float-right btn text-white btn-danger ml-2 btn_dislike_reply"> <i class="fa fa-thumbs-down"></i> <span class="reply_dislike_count"></span></button>
+                                            <button class="float-right btn text-white btn-success ml-2 btn_like_reply"> <i class="fa fa-thumbs-up"></i> <span class="reply_like_count"></span></button>
+                                      </p>
+                                   </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                template += `
+                    <div class="reply-form">
+                        <div class="row">
+                            <div class="col-md-10">
+
+                                <input type="text" class="form-control reply-input">
+                            </div>
+                            <div class="col-sm-2">
+                                <button class="btn btn-primary btn_add_reply">Yanıtla</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                $this.closest(".card").find(".reply-container").html(template);
+
+                $this.closest(".card").find(".reply-container").find(".reply-input").focus()
+
+                count++;
+
+            });
+        })
+        /* Get Replies */
+
+        /* Add Reply */
+        function addReply(commentId, data, callback) {
+            $.post(API_URL + "article/add-reply/" + commentId+"/", {
+
+                content: data.content,
+                csrfmiddlewaretoken:data.csrfmiddlewaretoken
+
+            }).done(function (data) {
+                callback(commentId);
+            })
+        }
+
+        $("html").on("click", ".btn_add_reply", function (e) {
+            e.preventDefault();
+
+            var $this = $(this);
+            var commentId = $(this).closest(".card").data("comment-id");
+
+            //console.log($this.closest(".reply-form").find(".token input[name='csrfmiddlewaretoken']").val())
+            console.log($("#reply-form input").val())
+
+            var context = {
+                content: $this.closest(".reply-form").find("input").val(),
+                csrfmiddlewaretoken: $("#token-form input").val()
+            }
+
+            addReply(commentId, context, function (commentId) {
+
+                getReplies(commentId, function (data) {
+
+                    var template = ``;
+                    var replies = data.results;
+
+                    $("input, textarea").removeAttr("autofocus");
+                    $("input, textarea").blur();
+
+                    replies.forEach(function (reply, i) {
+                        template += `
+                            <div class="card card-reply" data-comment-id="${reply.id}">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-2">
+                                            <img src="${reply.image}" class="img img-rounded img-fluid"/>
+                                            <p class="text-secondary text-center"> ${reply.created_date}</p>
+                                        </div>
+                                        <div class="col-md-10">
+                                            <p>
+                                                <a class="float-left" href="{% url 'user:user_page'%}?user=${reply.username}"><strong> ${reply.username} </strong></a>
+                                            </p>
+                                           <div class="clearfix"></div>
+                                            <p> ${reply.content}</p>
+                                            <p class="clearfix">
+                                                <button class="float-right btn btn-outline-primary ml-2 btn_replies"><i class="fa fa-reply"></i> Replies</button>
+                                                <button class="float-right btn text-white btn-danger ml-2 btn_dislike_comment"> <i class="fa fa-thumbs-down"></i> <span class="comment_dislike_count"></span></button>
+                                                <button class="float-right btn text-white btn-success ml-2 btn_like_comment"> <i class="fa fa-thumbs-up"></i> <span class="comment_like_count"></span></button>
+                                          </p>
+                                       </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    template += `
+                        <div class="reply-form">
+                            <div class="row">
+                                <div class="col-md-10">
+
+                                    <input type="text" class="form-control reply-input">
+                                </div>
+                                <div class="col-sm-2">
+                                    <button class="btn btn-primary btn_add_reply">Yanıtla</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    $this.closest(".card").find(".reply-container").html(template);
+
+                    $this.closest(".card").find(".reply-container").find(".reply-input").focus();
+
+                    count++;
+
+                })
+
+            });
+        })
+        /* Add Reply */
+
+        /* Reply Like */
+        function replyLike(replyId, callback) {
+            $.get(API_URL + "article/reply/like/" + replyId, function (data) {
+                console.log(data);
+                callback(data);
+            })
+        }
+
+        $("html").on("click", ".btn_like_reply", function (e) {
+            e.preventDefault();
+
+            var $this = $(this);
+
+            var replyId = $(this).closest(".card").data("reply-id");
+
+            replyLike(replyId, function (data) {
+
+                $this.find(".reply_like_count").html(data.like);
+                $this.prev().find(".reply_dislike_count").html(data.dislike);
+
+            });
+        })
+        /* Reply Like */
+
+         /* Reply DisLike */
+        function replyDisLike(replyId, callback) {
+            $.get(API_URL + "article/reply/dislike/" + replyId, function (data) {
+                callback(data);
+            })
+        }
+
+        $("html").on("click", ".btn_dislike_reply", function (e) {
+            e.preventDefault();
+
+            var $this = $(this);
+
+            var replyId = $(this).closest(".card").data("reply-id");
+
+            replyDisLike(replyId, function (data) {
+
+                $this.find(".reply_dislike_count").html(data.dislike);
+                $this.next().find(".reply_like_count").html(data.like);
+
+            });
+        })
+        /* Reply DisLike */
+
+        /* Add Comment */
+
+        function addComment(articleId, data, callback) {
+            $.post(API_URL + "article/add-comment/" + articleId + "/", {
+                is_positive: data.is_positive,
+                content: data.content,
+                csrfmiddlewaretoken: data.csrfmiddlewaretoken
+            }).done(function (data) {
+                callback(data);
+            })
+
+        }
+
+        $("html").on("click", ".btn_add_comment", function (e) {
+            e.preventDefault();
+
+            var $this = $(this);
+            var article_id = {{ id }};
+
+            var is_positive = false;
+
+            if($this.attr("id") === "positive") {
+                is_positive = true
+            }
+
+            var data = {
+                content: $this.closest(".add-comment-form").find("input").val(),
+                is_positive: is_positive,
+                csrfmiddlewaretoken: $("#token-form input").val()
+            };
+
+            addComment(article_id, data, function () {
+                if(data.is_positive) {
+                    getPositiveComments(article_id);
+                } else {
+                    getNegativeComments(article_id);
+                }
+            })
+
+        });
+        /* Add Comment */
+
+        /* Get Positive Link */
+
+        $("html").on("click", "#btn_positive_related_links", function () {
+            var $this = $(this);
+
+            $this.parent().find(".btn").removeClass("active");
+
+            $this.addClass("active");
+
+            getPositiveRelatedLink({{id}});
+        })
+
+        function getPositiveRelatedLink(articleId) {
+            $.get(API_URL + "article/positive-related/?article=" + articleId, function (data) {
+
+                var positive_links = data.results;
+                var template = ``;
+                var positive_link_form = `<div class="add-link-form">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <input style="margin-bottom: 20px" type="text" class="form-control title-input" placeholder="Başlık giriniz">
+                        </div>
+                        <div class="col-md-12">
+                            <input style="margin-bottom: 20px" type="text" class="form-control link-input" placeholder="Web adres giriniz">
+                        </div>
+                        <div style="width: 100%" class="row justify-content-end">
+                            <button class="btn btn-primary btn_add_link" id="positive-link">Destekleyici Link Ekle</button>
+                        </div>
+                    </div>
+                </div>`;
+
+                positive_links.forEach(function (item) {
+                    template += `
+                        <div class="card" data-link-id="${item.id}">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <p>
+                                            <a href="${item.link}"><strong> ${item.title} </strong></a>
+                                         </p>
+                                         <p>
+                                            <a href="{% url 'user:user_page'%}?user=${item.username}">${item.username}</a>
+                                          </p>
+                                         <p>
+                                            ${item.created_date}
+                                          </p>
+
+                                   </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                })
+
+
+                $("#article-footer").html(template);
+                $("#article-footer").append(positive_link_form);
+
+            })
+        }
+
+        /* Get Negative Link */
+
+        $("html").on("click", "#btn_negative_related_links", function () {
+            var $this = $(this);
+
+            $this.parent().find(".btn").removeClass("active");
+
+            $this.addClass("active");
+
+            getNegativeRelatedLink({{id}});
+        })
+
+        function getNegativeRelatedLink(articleId) {
+            $.get(API_URL + "article/negative-related/?article=" + articleId, function (data) {
+
+                var negative_links = data.results;
+                var template = ``;
+                var negative_link_form = `<div class="add-link-form">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <input style="margin-bottom: 20px" type="text" class="form-control title-input" placeholder="Başlık giriniz">
+                        </div>
+                        <div class="col-md-12">
+                            <input style="margin-bottom: 20px" type="text" class="form-control link-input" placeholder="Web adres giriniz">
+                        </div>
+                        <div style="width: 100%" class="row justify-content-end">
+                            <button class="btn btn-primary btn_add_link" id="negative-link">Karşıt Link Ekle</button>
+                        </div>
+                    </div>
+                </div>`;
+
+                negative_links.forEach(function (item) {
+                    template += `
+                        <div class="card" data-link-id="${item.id}">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <p>
+                                            <a href="${item.link}"><strong> ${item.title} </strong></a>
+                                         </p>
+                                         <p>
+                                            <a href="{% url 'user:user_page'%}?user=${item.username}">${item.username}</a>
+                                          </p>
+                                         <p>
+                                            ${item.created_date}
+                                          </p>
+
+                                   </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                })
+
+
+                $("#article-footer").html(template);
+                $("#article-footer").append(negative_link_form);
+
+            })
+        }
+
+        /* Add Link */
+
+        function addLink(articleId, data, callback) {
+            $.post(API_URL + "add-related-link/" + articleId + "/", {
+                is_positive: data.is_positive,
+                title: data.title,
+                link: data.link,
+                csrfmiddlewaretoken: data.csrfmiddlewaretoken
+            }).done(function (data) {
+                callback(data);
+            })
+
+        }
+
+        $("html").on("click", ".btn_add_link", function (e) {
+            e.preventDefault();
+
+            var $this = $(this);
+            var article_id = {{ id }};
+
+            var is_positive = false;
+
+            if($this.attr("id") === "positive-link") {
+                is_positive = true
+            }
+
+            var data = {
+                title: $this.closest(".add-link-form").find("input.title-input").val(),
+                link: $this.closest(".add-link-form").find("input.link-input").val(),
+                is_positive: is_positive,
+                csrfmiddlewaretoken: $("#token-form input").val()
+            };
+
+            console.log(data);
+
+            addLink(article_id, data, function () {
+                if(data.is_positive) {
+                    getPositiveRelatedLink(article_id);
+                } else {
+                    getNegativeRelatedLink(article_id);
+                }
+            })
+
+        });
+
+    </script>
+
+
+{% endblock body %}
+

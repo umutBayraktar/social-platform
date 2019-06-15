@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+
+
+
+{% block body %}
+<form action="" method="POST" id="newDiscussionForm" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.media }}
+
+        <div class="form-group">
+            <label for="id_title"><h4>Başlık:</h4></label> <input type="text" name="text" class="form-control" maxlength="200" required id="id_text" />
+        <label for="id_image"><h4>Resim:</h4></label> <input type="file" name="image" class="form-control" id="id_image" />
+        <label for="id_video_url"><h4>Video url:</h4></label> <input type="url" name="video_url" class="form-control" maxlength="200" id="id_video_url" />
+        {{form.tags}}
+        </div>
+    <input type="submit" class="btn btn-primary" value="Tartışma Başlat">
+
+
+
+    </form>
+{% endblock body %}
+
+

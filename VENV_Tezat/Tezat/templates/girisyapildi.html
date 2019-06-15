@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Giriş Yapıldı</title>
+</head>
+<body>
+    {% if request.user.is_authenticated %}
+    <h1>Tebrikler kullanıcı girişi yaptınız</h1>
+    {% endif %}
+</body>
+</html>

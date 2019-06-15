@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+
+{% block body %}
+
+    <div class="timeline-content"></div>
+
+
+<script>
+
+    function getFollowingArticles() {
+        return $.get(API_URL + "timeline/following-articles/");
+    }
+
+    function getFollowingDiscussions() {
+        return $.get(API_URL + "timeline/following-discussions/");
+    }
+
+    function getTagArticles() {
+        return $.get(API_URL + "timeline/tag-articles/");
+    }
+
+    function getTagDiscussions() {
+        return $.get(API_URL + "timeline/tag-discussions/");
+    }
+
+    $.when(getFollowingArticles(), getFollowingDiscussions(), getTagArticles(), getTagDiscussions()).done(function(a1, a2, a3, a4){
+
+        var results = [], template = ``;
+
+
+        for (var i = 0; i < 15; i++) {
+
+            if(a1[0].results[i]) {
+                results.push(a1[0].results[i])
+            }
+
+            if(a2[0].results[i]) {
+                results.push(a2[0].results[i])
+            }
+
+            if(a3[0].results[i]) {
+                results.push(a3[0].results[i])
+            }
+
+            if(a4[0].results[i]) {
+                results.push(a4[0].results[i])
+            }
+
+        }
+
+        console.log(results)
+
+        var i=0;
+        results.forEach(function (item) {
+
+            $(".timeline-content")
+                .append(`
+                    <div class="col-sm-12">
+                        <div class="card">
+                            ${item.image != null ? `<img id="article_image" src="${item.image}" alt="" class="card-img-top">` : `` }
+                            <div class="card-header">
+                                ${item.title != null ? `<h1 id="article_title" class="card-title">${item.title}</h1>` : `<p>${item.text}</p>`}
+                                <a href="/users/page/?user=${item.author}">${item.author}</a>
+                                <h4 id="article_created_date" class="card-subtitle mb-2 text-muted">${item.created_date}</h4>
+                                <h3 id="article_pageview" class="card-subtitle mb-2 text-muted">Görüntülenme Sayısı: ${item.pageview}</h3>
+                                ${i%2 == 0 ? `<a id="article_detail" href="/articles/article/${item.id}/" class="btn btn-dark">Görüntüle</a>` :`<a id="article_detail" href="/discussions/discussion/${item.id}/" class="btn btn-dark">Görüntüle</a>`}
+                                ${i++}
+                            </div>
+                        </div>
+                    </div>
+                `);
+
+        })
+
+
+    });
+
+
+</script>
+
+
+{% endblock body %}
+
+
+
